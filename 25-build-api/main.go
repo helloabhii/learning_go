@@ -71,6 +71,8 @@ func getOneCourse(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+//course controller
+
 func createOneCourse(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Create One Course")
 	w.Header().Set("Content-Type", "application/json")
@@ -87,7 +89,6 @@ func createOneCourse(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Please send some data")
 		return
 	}
-
 	//generate unique id, string
 	//append course into courses
 	rand.Seed(time.Now().UnixNano())
@@ -95,4 +96,43 @@ func createOneCourse(w http.ResponseWriter, r *http.Request) {
 	courses = append(courses, course)
 	json.NewEncoder(w).Encode(course)
 	return
+}
+
+// Update a course controller
+func updateOneCourse(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Update one course")
+	w.Header().Set("Content-Type", "application/json")
+	// first - grab id from request
+	params := mux.Vars(r)
+
+	//loop, id, remove, add with my ID
+
+	for index, course := range courses {
+		if course.CourseId == params["id"] {
+			courses = append(courses[:index], courses[index+1:]...)
+			var course Course
+			_ = json.NewDecoder(r.Body).Decode(&course)
+			course.CourseId = params["id"]
+			courses = append(courses, course)
+			json.NewEncoder(w).Encode(courses)
+			return
+		}
+	}
+	//TODO: send  a response when id is not found
+}
+
+// Delete a course controller in golang
+func deleteOneCourse(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Delete One Course")
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+
+	//loop, id, remove(index, index+1)
+	for index, course := range courses {
+		if course.CourseId == params["id"] {
+			courses = append(courses[:index], courses[index+1:]...)
+			break
+		}
+	}
 }
