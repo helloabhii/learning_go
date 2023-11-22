@@ -1,11 +1,14 @@
 // go mod init github.com/helloabhii/learning_go/25-build-api
 // go get -u github.com/gorilla/mux
+//go build .
+//go run main.go
 
 package main
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -19,7 +22,7 @@ import (
 type Course struct {
 	CourseId    string  `json:"courseid"`
 	CourseName  string  `json:"coursename"`
-	CoursePrice int     `json:"price"`
+	CoursePrice int     `json:"-"`
 	Author      *Author `json:"author"`
 }
 
@@ -38,7 +41,24 @@ func (c *Course) IsEmpty() bool {
 }
 
 func main() {
+	fmt.Println("API - LearnCodeOnline.in")
+	r := mux.NewRouter()
 
+	// seeding
+	courses = append(courses, Course{CourseId: "2", CourseName: "golang", CoursePrice: 299, Author: &Author{Fullname: "helloabhii", Website: "helloabhii.hashnode.dev"}})
+
+	courses = append(courses, Course{CourseId: "4", CourseName: "linux", CoursePrice: 199, Author: &Author{Fullname: "helloabhii", Website: "www.google.com"}})
+
+	//routing
+	r.HandleFunc("/", serveHome).Methods("GET")
+	r.HandleFunc("/courses", getAllCourses).Methods("GET")
+	r.HandleFunc("/course/{id}", getOneCourse).Methods("GET")
+	r.HandleFunc("/course", createOneCourse).Methods("POST")
+	r.HandleFunc("/course/{id}", updateOneCourse).Methods("PUT")
+	r.HandleFunc("/course", deleteOneCourse).Methods("DELETE")
+
+	//listen to the port
+	log.Fatal(http.ListenAndServe(" :4000", r))
 }
 
 // controllers - file
@@ -89,6 +109,10 @@ func createOneCourse(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Please send some data")
 		return
 	}
+
+	//TODO: check only  if  title is duplicate
+	//loop, title matches with course.coursename, JSON
+
 	//generate unique id, string
 	//append course into courses
 	rand.Seed(time.Now().UnixNano())
@@ -132,6 +156,7 @@ func deleteOneCourse(w http.ResponseWriter, r *http.Request) {
 	for index, course := range courses {
 		if course.CourseId == params["id"] {
 			courses = append(courses[:index], courses[index+1:]...)
+			//todo: send a confirm or deny response
 			break
 		}
 	}
