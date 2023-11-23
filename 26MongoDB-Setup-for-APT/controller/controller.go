@@ -2,8 +2,10 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 
 	model "github.com/learning_go/mongoapi/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -87,7 +89,9 @@ func deleteAllMovie() int64 {
 }
 
 // get all movies from database
+
 func getAllMovies() []primitive.M {
+
 	cur, err := collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		log.Fatal(err)
@@ -105,4 +109,11 @@ func getAllMovies() []primitive.M {
 	}
 	defer cur.Close(context.Background())
 	return movies
+}
+
+// Actual controller - file
+func GetMyAllMovies(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencode")
+	allMovies := getAllMovies()
+	json.NewEncoder(w).Encode(allMovies)
 }
